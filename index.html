@@ -1,13 +1,30 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>trial-2</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="vellox-favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Vellox — Transform raw CSV data into stunning visual insights instantly. No setup, no complexity, just clarity." />
+  <title>Vellox — Data Insight Generator</title>
+
+  <!-- React & ReactDOM (UMD versions) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <!-- Babel standalone for in-browser JSX compilation -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <!-- Application Logic -->
+  <script type="text/babel" src="app.js"></script>
+</body>
+
 </html>
