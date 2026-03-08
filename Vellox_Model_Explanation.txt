@@ -1,0 +1,290 @@
+================================================================================
+              VELLOX — PUBLIC DATA INSIGHT GENERATOR
+                      Model Explanation Document
+================================================================================
+
+
+1. INTRODUCTION
+--------------------------------------------------------------------------------
+
+Vellox is a web-based Public Data Insight Generator designed to make data
+analysis accessible to everyone — regardless of their technical background.
+
+The core idea is simple: a user uploads a CSV (Comma-Separated Values) file
+through an intuitive drag-and-drop interface, and the system instantly
+processes the data and returns a comprehensive analytical report. No coding,
+no complex software setup, and no data science expertise required.
+
+The name "Vellox" reflects the speed and simplicity of the tool — fast
+insights at your fingertips.
+
+
+2. PROBLEM STATEMENT
+--------------------------------------------------------------------------------
+
+Public data is everywhere — government records, census results, climate
+reports, economic indicators, social surveys, and more. Most of this data
+is freely available in CSV format from open data portals.
+
+However, the gap between having data and understanding data is enormous.
+A typical CSV file with thousands of rows and dozens of columns is nearly
+impossible to interpret just by looking at it. Traditional analytics tools
+are either too expensive (like Tableau) or too complex (like writing Python
+scripts manually) for the average user.
+
+Vellox bridges this gap by automating the entire analysis process behind a
+clean, modern web interface.
+
+
+3. SOLUTION OVERVIEW
+--------------------------------------------------------------------------------
+
+Vellox is a full-stack web application with two main parts:
+
+  (a) A React-based Frontend — The user-facing interface where users upload
+      their CSV files and view the generated insights.
+
+  (b) A FastAPI-based Backend — The Python-powered analytical engine that
+      receives the CSV, processes it, and returns a structured JSON report.
+
+When a user uploads a CSV file, the frontend sends it to the backend API.
+The backend reads the file using Pandas (a powerful data manipulation
+library), runs six different types of analysis on it, bundles the results
+into a single report, and sends it back to the frontend for display.
+
+
+4. HOW THE APPLICATION WORKS (STEP-BY-STEP PIPELINE)
+--------------------------------------------------------------------------------
+
+Step 1: User Visits the Website
+    The user opens Vellox in their web browser. They are greeted by a clean,
+    modern landing page with the tagline: "See what your data really means."
+
+Step 2: User Uploads a CSV File
+    The user either drags and drops a CSV file onto the upload zone, or clicks
+    the zone to browse and select a file from their computer. The upload zone
+    only accepts .csv files.
+
+Step 3: Frontend Sends the File to the Backend
+    Once the file is selected, the React frontend sends it as a POST request 
+    to the FastAPI backend at the /api/analyze endpoint. The file is sent as
+    form data (multipart/form-data).
+
+Step 4: Backend Validates the File
+    The FastAPI server receives the file and performs validation checks:
+      - Is the file a .csv file? If not, it sends back an error.
+      - Is the file empty? If yes, it sends back an error.
+    If validation passes, it proceeds to the next step.
+
+Step 5: Data is Loaded into a DataFrame
+    The backend uses the Pandas library to read the raw CSV content into
+    a structured table called a DataFrame. This is the standard format for
+    working with tabular data in Python.
+
+Step 6: The DataAnalyzer Processes the Data
+    The core of the system is the DataAnalyzer class, which runs six
+    independent analysis modules on the DataFrame (detailed in Section 5).
+
+Step 7: Results are Bundled into a JSON Report
+    All six analysis results, along with basic metadata (row count, column
+    count), are combined into a single JSON (JavaScript Object Notation)
+    object — a structured format that is easy for both humans and machines
+    to read.
+
+Step 8: Backend Sends the Report to the Frontend
+    The FastAPI server sends the JSON report as an HTTP response back to
+    the React frontend.
+
+Step 9: Frontend Displays the Insights
+    The React application receives the JSON and renders the insights in a
+    clean, visual format for the user to explore.
+
+
+5. THE SIX ANALYSIS MODULES (THE ANALYTICAL ENGINE)
+--------------------------------------------------------------------------------
+
+The DataAnalyzer class is the brain of Vellox. It takes any CSV dataset
+and automatically runs the following six analyses:
+
+
+5.1  DESCRIPTIVE STATISTICS
+     -----------------------------------------------------------------------
+     What it does:
+       Calculates the fundamental statistical measures for every numerical
+       column in the dataset.
+
+     Metrics computed:
+       - Count (number of non-missing values)
+       - Mean (average value)
+       - Standard Deviation (how spread out the values are)
+       - Minimum and Maximum values
+       - 25th Percentile (Q1), 50th Percentile (Median), 75th Percentile (Q3)
+
+     Why it matters:
+       These numbers give a quick snapshot of the distribution and spread
+       of the data. For example, if you upload salary data, it instantly
+       tells you the average salary, the lowest, the highest, and how
+       widely salaries vary.
+
+
+5.2  MISSING VALUE REPORT
+     -----------------------------------------------------------------------
+     What it does:
+       Scans every column in the dataset and counts how many values are
+       missing (blank, null, or NaN). It also calculates the percentage
+       of missing data for each column.
+
+     Why it matters:
+       Missing data is one of the most common problems in real-world
+       datasets. If 40% of a column's values are missing, any conclusions
+       drawn from that column may be unreliable. This report highlights
+       exactly where the gaps are.
+
+
+5.3  CORRELATION MATRIX
+     -----------------------------------------------------------------------
+     What it does:
+       Computes the Pearson correlation coefficient between every pair of
+       numerical columns. The result is a matrix where each cell contains
+       a value between -1 and +1.
+
+       - A value close to +1 means the two columns increase together
+         (strong positive relationship).
+       - A value close to -1 means when one increases, the other decreases
+         (strong negative relationship).
+       - A value close to 0 means there is no clear linear relationship.
+
+     Why it matters:
+       Correlation helps discover hidden relationships in data. For example,
+       it might reveal that "years of experience" and "salary" are strongly
+       correlated, confirming an expected pattern — or it might surface
+       surprising connections the user did not anticipate.
+
+
+5.4  OUTLIER DETECTION (IQR METHOD)
+     -----------------------------------------------------------------------
+     What it does:
+       Identifies extreme values (outliers) in each numerical column using
+       the Interquartile Range (IQR) method.
+
+     How the IQR method works:
+       1. Calculate Q1 (25th percentile) and Q3 (75th percentile).
+       2. Compute IQR = Q3 - Q1.
+       3. Define lower bound = Q1 - 1.5 × IQR.
+       4. Define upper bound = Q3 + 1.5 × IQR.
+       5. Any value below the lower bound or above the upper bound is
+          flagged as an outlier.
+
+     Why it matters:
+       Outliers can significantly skew averages and other statistics. For
+       instance, if most salaries in a dataset are between 40,000 and
+       90,000 but one entry is 3,000,000, that single outlier would
+       inflate the average and distort the analysis. Detecting these
+       values helps users decide whether to investigate or exclude them.
+
+
+5.5  COLUMN SUMMARY
+     -----------------------------------------------------------------------
+     What it does:
+       Provides a quick overview of every column in the dataset, including:
+       - Data type (number, text, date, etc.)
+       - Number of unique values
+       - Number of missing values
+
+     Why it matters:
+       This gives users an at-a-glance understanding of their data's
+       structure. For example, if a "Department" column has only 3 unique
+       values, the user knows there are 3 departments. If a "Date" column
+       is being read as text instead of a date, it signals a formatting
+       issue.
+
+
+5.6  DATA QUALITY SCORE
+     -----------------------------------------------------------------------
+     What it does:
+       Assigns an overall quality score (0-100) and a letter grade to the
+       dataset based on its completeness.
+
+     How scoring works:
+       - Starts at 100 points.
+       - Points are deducted based on the percentage of missing values
+         across all cells in the dataset.
+       - The higher the percentage of missing data, the more points are
+         deducted.
+
+     Grading scale:
+       - 90-100  →  A (Excellent)
+       - 80-89   →  B (Good)
+       - 70-79   →  C (Fair)
+       - 60-69   →  D (Poor)
+       - Below 60 →  F (Very Poor)
+
+     Why it matters:
+       Before drawing any conclusions from a dataset, it is crucial to
+       know whether the data is trustworthy. A dataset with a grade of
+       "A" can be analyzed with confidence, while a dataset graded "D"
+       or "F" should be cleaned or supplemented before serious analysis.
+
+
+6. TECHNOLOGY STACK
+--------------------------------------------------------------------------------
+
+Layer           Technology              Purpose
+-----------     --------------------    ----------------------------------------
+Frontend        React 19                Component-based user interface library
+Bundler         Vite 7                  Fast development server and build tool
+Backend         FastAPI                 High-performance Python web API framework
+Server          Uvicorn                 Lightning-fast ASGI server for Python
+Data Analysis   Pandas 2.2              Data manipulation and analysis library
+Computation     NumPy 1.26              Numerical computing and array operations
+Styling         Vanilla CSS             Custom, modern, animated UI design
+
+
+7. API ENDPOINTS
+--------------------------------------------------------------------------------
+
+Endpoint             Method    Description
+-------------------  ------    ------------------------------------------------
+/api/status          GET       Health check; confirms the API is running.
+/api/analyze         POST      Accepts a CSV file upload and returns the
+                               complete analytical report as a JSON response.
+
+
+8. FINAL REPORT STRUCTURE (JSON OUTPUT)
+--------------------------------------------------------------------------------
+
+When a CSV is uploaded and processed, the API returns a JSON object with
+the following structure:
+
+  {
+    "row_count":              Total number of rows in the dataset,
+    "column_count":           Total number of columns in the dataset,
+    "column_summary":         Per-column data type, unique values, missing count,
+    "data_quality":           Score (0-100), grade (A-F), missing cell stats,
+    "descriptive_statistics": Mean, std, min, max, percentiles per column,
+    "missing_values":         Missing count and percentage per column,
+    "outliers":               Outlier count, bounds, and sample values per column,
+    "correlation_matrix":     Pairwise Pearson correlation coefficients
+  }
+
+
+9. CONCLUSION
+--------------------------------------------------------------------------------
+
+Vellox demonstrates that powerful data analysis does not have to be complex
+or inaccessible. By combining a modern React frontend with a robust FastAPI
+backend and the analytical power of Pandas and NumPy, the application
+delivers instant, meaningful insights from any CSV dataset.
+
+The six-module analytical engine covers the most essential aspects of
+exploratory data analysis — from basic statistics to outlier detection to
+data quality assessment — providing users with a comprehensive understanding
+of their data in seconds.
+
+The project showcases a clean full-stack architecture, modular code design,
+and a user experience focused on simplicity and clarity.
+
+
+================================================================================
+                          END OF DOCUMENT
+================================================================================
